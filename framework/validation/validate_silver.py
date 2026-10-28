@@ -37,6 +37,8 @@ def main():
                     HAVING COUNT(DISTINCT country_code) > 1
                 ) AS conflicts
             """)
+            # Un registro por cliente: COUNT(DISTINCT) ignora NULL, así que un id nulo también cuenta
+            duplicates = fetch_one(cur, f"SELECT COUNT(*) - COUNT(DISTINCT customer_id) FROM {SILVER_TABLE}")
 
             # Guarda resultados en ops_dq_results
             cur.execute(
@@ -60,11 +62,19 @@ def main():
                  "country_code with >1 name/region or country_name with >1 code")
             )
 
-    print(f"✅ Validation completed: total={total}, name_null={name_null}, underage={underage}, country_conflicts={country_conflicts}")
+            cur.execute(
+                "INSERT INTO gameday.ops_dq_results VALUES (?, current_timestamp(), ?, 'duplicate_customer_id_count', ?, ?, ?)",
+                (RUN_ID, SILVER_TABLE, "FAIL" if duplicates > 0 else "PASS", float(duplicates),
+                 "rows beyond one per customer_id (includes null ids)")
+            )
 
-    # Un catálogo de países incoherente corta el pipeline: Gold no se publica
-    if country_conflicts > 0:
-        raise SystemExit(f"❌ country_mapping_conflicts={country_conflicts}: Gold is not published")
+    print(f"✅ Validation completed: total={total}, name_null={name_null}, underage={underage}, "
+          f"country_conflicts={country_conflicts}, duplicates={duplicates}")
+
+    # Catálogo de países incoherente o clientes duplicados cortan el pipeline: Gold no se publica
+    if country_conflicts > 0 or duplicates > 0:
+        raise SystemExit(f"❌ country_mapping_conflicts={country_conflicts}, "
+                         f"duplicate_customer_id_count={duplicates}: Gold is not published")
 
 if __name__ == "__main__":
     main()

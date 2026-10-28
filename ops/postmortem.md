@@ -30,7 +30,7 @@
 | [ hh:mm ] | Detectamos la causa: el diff de `3915bc8` cambia `CL` a `Perú / Andina` |
 | [ hh:mm ] | Contenemos: retenemos el lote del lunes y no publicamos Gold con el catálogo malo |
 | [ hh:mm ] | Revertimos el cambio del catálogo en `main` |
-| [ hh:mm ] | Recuperamos Silver y Gold: [ camino elegido ] |
+| [ hh:mm ] | Recuperamos Silver y Gold: restore silver_customers_v2, corregir ref_paises y reprocesar lotes |
 | [ hh:mm ] | Cargamos el lote del lunes |
 | [ hh:mm ] | Primer `verificar` en verde |
 
@@ -50,7 +50,7 @@
 ## Acción preventiva
 
 - Check nuevo en `framework/validation/validate_silver.py`: `country_mapping_conflicts` cuenta los `country_code` con más de un par (nombre, región) y los `country_name` con más de un `country_code`. Si el valor es mayor a 0, escribe `FAIL` en `gameday.ops_dq_results` y corta el pipeline antes de publicar Gold.
-- ¿Lo probaron? ¿Falla si vuelven a aplicar el cambio del viernes? [ sí / no ]
+- ¿Lo probaron? ¿Falla si vuelven a aplicar el cambio del viernes? no
 - Otras acciones (con dueño y fecha):
   - Revisión obligatoria en los PR que tocan `data/ref/` (por ejemplo, con `CODEOWNERS`). Dueño: [ ... ] · Fecha: [ ... ]
   - Test en CI que compare `data/ref/paises.csv` contra el catálogo esperado antes del merge. Dueño: [ ... ] · Fecha: [ ... ]
