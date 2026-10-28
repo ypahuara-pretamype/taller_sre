@@ -25,7 +25,7 @@ Quiero saber qué filas cambiaron y desde qué versión.
 
 ```
 Tenemos que dejar Silver y Gold en un estado bueno sin duplicar registros.
-Compárame dos caminos: [camino A] y [camino B]. Para cada uno dime
+Compárame dos caminos: Corregir ref_paises reprocesar el lote del viernes, actualizado las filas ya procesadas por el customer_id y Corregir ref_paises, borrar todo y reprocesar los lotes del jueves y viernes. Para cada uno dime
 qué riesgos tiene, qué pasa con el lote que llegó después y cuánto
 reproceso implica. No ejecutes nada.
 ```
@@ -33,7 +33,7 @@ reproceso implica. No ejecutes nada.
 ## 4. Redactar el postmortem
 
 ```
-Con esta línea de tiempo y esta causa raíz [pegar], ayúdame a redactar
+Con esta línea de tiempo y esta causa raíz "alguien modifico el ref_paises, cambiando el country_name de Chile a Peru", ayúdame a redactar
 ops/postmortem.md sin culpables. Mantén la estructura de la plantilla.
 ```
 

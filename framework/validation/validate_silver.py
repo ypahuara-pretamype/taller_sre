@@ -23,6 +23,20 @@ def main():
             total = fetch_one(cur, f"SELECT COUNT(*) FROM {SILVER_TABLE}")
             name_null = fetch_one(cur, f"SELECT COUNT(*) FROM {SILVER_TABLE} WHERE dq_is_name_null = true")
             underage = fetch_one(cur, f"SELECT COUNT(*) FROM {SILVER_TABLE} WHERE dq_is_underage = true")
+            # País coherente: un código con un solo nombre/región y un nombre con un solo código
+            country_conflicts = fetch_one(cur, f"""
+                SELECT COUNT(*) FROM (
+                    SELECT country_code FROM {SILVER_TABLE}
+                    WHERE country_code IS NOT NULL
+                    GROUP BY country_code
+                    HAVING COUNT(DISTINCT country_name, region) > 1
+                    UNION ALL
+                    SELECT country_name FROM {SILVER_TABLE}
+                    WHERE country_name IS NOT NULL
+                    GROUP BY country_name
+                    HAVING COUNT(DISTINCT country_code) > 1
+                ) AS conflicts
+            """)
 
             # Guarda resultados en ops_dq_results
             cur.execute(
@@ -40,7 +54,17 @@ def main():
                 (RUN_ID, SILVER_TABLE, "WARN" if underage > 0 else "PASS", float(underage), "age < 18")
             )
 
-    print(f"✅ Validation completed: total={total}, name_null={name_null}, underage={underage}")
+            cur.execute(
+                "INSERT INTO gameday.ops_dq_results VALUES (?, current_timestamp(), ?, 'country_mapping_conflicts', ?, ?, ?)",
+                (RUN_ID, SILVER_TABLE, "FAIL" if country_conflicts > 0 else "PASS", float(country_conflicts),
+                 "country_code with >1 name/region or country_name with >1 code")
+            )
+
+    print(f"✅ Validation completed: total={total}, name_null={name_null}, underage={underage}, country_conflicts={country_conflicts}")
+
+    # Un catálogo de países incoherente corta el pipeline: Gold no se publica
+    if country_conflicts > 0:
+        raise SystemExit(f"❌ country_mapping_conflicts={country_conflicts}: Gold is not published")
 
 if __name__ == "__main__":
     main()
