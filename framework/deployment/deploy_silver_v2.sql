@@ -23,3 +23,7 @@ CREATE TABLE IF NOT EXISTS gameday.gold_contactables_por_pais (
     pct_contactables DOUBLE,
     updated_ts TIMESTAMP
 );
+
+
+ALTER TABLE gameday.gold_contactables_por_pais
+  SET TAGS ('owner' = 'Valeria', 'cost_center' = 'gold', 'consumer' = 'marketing');
